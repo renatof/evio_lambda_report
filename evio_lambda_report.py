@@ -7,6 +7,7 @@ if __name__ == "__main__":
   node_number = 1
   overlay_id_to_number_dict = {}
   overlay_number_to_peer_list_dict = {}
+  overlay_number_to_samples_dict = {}
   unique_nodeid_overlayid_to_number_dict = {}
   rawline_number = 0
 
@@ -91,12 +92,14 @@ if __name__ == "__main__":
     if found_overlay_number == 0:
       # print ("No overlay found, creating overlay_number: " + str(overlay_number))
       overlay_number_to_peer_list_dict[overlay_number] = sample_node_number_set
+      overlay_number_to_samples_dict[overlay_number] = 1
       overlay_number = overlay_number + 1
     # else, union with existing set
     else:
       for i in sample_node_number_set:
         if i not in overlay_number_to_peer_list_dict[found_overlay_number]:
           overlay_number_to_peer_list_dict[found_overlay_number].append(i)
+        overlay_number_to_samples_dict[found_overlay_number] = overlay_number_to_samples_dict[found_overlay_number] + 1
       # print ("found_overlay_number: " + str(found_overlay_number))
     #   print ("Before union: " + str(overlay_number_to_peer_list_dict[found_overlay_number]))
     #  overlay_number_to_peer_list_dict[found_overlay_number].update(sample_node_number_set)
@@ -137,13 +140,34 @@ if __name__ == "__main__":
                 overlay_number_to_peer_list_dict[okey].append(j)
             overlay_number_to_peer_list_dict[ookey] = []
 
-  print ("Overlays merged:")
+  print ("Final results:")
+  noverlays = 0
   matches = 0
+  num_nodes_histogram = {
+    1 : 0,
+    4 : 0,
+    8 : 0,
+    16 : 0,
+    32 : 0,
+    64 : 0,
+    128 : 0,
+    256 : 0 }
   for key, value in overlay_number_to_peer_list_dict.items():
     if value: 
-      print(key, ' : ', value)
+      print(key, '(', overlay_number_to_samples_dict[key], ') : ', value)
       matches = matches + len(value)
-  print ("Nodes len: " + str(nodes) + " matches: " + str(matches))
+      noverlays = noverlays + 1
+      maxnode = 0
+      for key2, value2 in num_nodes_histogram.items():
+        if len(value) >= key2:
+          if key2 > maxnode:
+            maxnode = key2
+      num_nodes_histogram[maxnode] = num_nodes_histogram[maxnode] + 1
+        
+  print ("Sanity check: nodes len: " + str(nodes) + " matches: " + str(matches))
+  print ("Total number of overlays: " + str(noverlays))
+  print ("Overlay size histogram: " + str(num_nodes_histogram))
+
 
 
       
